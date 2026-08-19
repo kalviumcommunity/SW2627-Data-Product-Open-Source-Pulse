@@ -3,3 +3,4 @@ numpy
 sqlalchemy
 streamlit
 pytest
+chardet
