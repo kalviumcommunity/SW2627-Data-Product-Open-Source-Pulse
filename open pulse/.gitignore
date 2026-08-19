@@ -3,7 +3,6 @@ __pycache__/
 .env
 .venv/
 venv/
-data/raw/*
 data/processed/*
 data/*.db
 data/*.sqlite
