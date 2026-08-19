@@ -1,0 +1,18 @@
+# Database
+DB_URL: sqlite:///data/open_pulse.db
+DB_ECHO: false
+
+# Raw data location (GitHub export CSVs/JSON)
+RAW_DATA_DIR: data/raw
+
+# GitHub export file patterns
+CONTRIBUTORS_FILE: contributors.csv
+PRS_FILE: pull_requests.csv
+ISSUES_FILE: issues.csv
+REVIEWS_FILE: reviews.csv
+COMMITS_FILE: commits.csv
+
+# Onboarding thresholds (days)
+FIRST_REVIEW_SLOW_THRESHOLD_DAYS: 10
+FIRST_REVIEW_FAST_THRESHOLD_DAYS: 2
+LOOKBACK_MONTHS: 12
