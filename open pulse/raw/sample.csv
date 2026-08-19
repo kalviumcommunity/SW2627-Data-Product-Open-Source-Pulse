@@ -1,0 +1,11 @@
+id,name,age,score,active
+1,Alice,25,85.5,true
+2,Bob,30,None,true
+3,Charlie,35,90.0,false
+4,Diana,28,78.3,true
+5,Alice,25,85.5,true
+6,Edward,None,88.0,true
+7,Fiona,22,92.1,false
+8,George,40,None,true
+9,Helen,33,76.8,true
+10,Ivan,29,81.5,false
