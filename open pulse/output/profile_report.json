@@ -1,0 +1,92 @@
+{
+  "dataset": "C:\\Sprint projects\\OpenSourcePulse\\SW2627-Data-Product-Open-Source-Pulse\\open pulse\\data\\raw\\quality_test.csv",
+  "record_count": 5,
+  "column_count": 5,
+  "nulls_and_duplicates": {
+    "null_counts": {
+      "customer_id": 0,
+      "name": 1,
+      "email": 2,
+      "amount": 0,
+      "status": 1
+    },
+    "null_percentages": {
+      "customer_id": 0.0,
+      "name": 20.0,
+      "email": 40.0,
+      "amount": 0.0,
+      "status": 20.0
+    },
+    "exact_duplicate_count": 0,
+    "duplicate_percentage": 0.0
+  },
+  "numerical_stats": {
+    "min": {
+      "customer_id": 1.0,
+      "amount": -50.0
+    },
+    "max": {
+      "customer_id": 5.0,
+      "amount": 500.0
+    },
+    "mean": {
+      "customer_id": 3.0,
+      "amount": 180.0
+    },
+    "median": {
+      "customer_id": 3.0,
+      "amount": 100.0
+    },
+    "std": {
+      "customer_id": 1.58,
+      "amount": 207.97
+    },
+    "null_count": {
+      "customer_id": 0.0,
+      "amount": 0.0
+    }
+  },
+  "categorical_stats": {
+    "name": {
+      "unique_count": 3,
+      "top_values": {
+        "Alice": 2,
+        "Bob": 1,
+        "Diana": 1
+      },
+      "null_count": 1
+    },
+    "email": {
+      "unique_count": 2,
+      "top_values": {
+        "alice@example.com": 2,
+        "charlie@example.com": 1
+      },
+      "null_count": 2
+    },
+    "status": {
+      "unique_count": 2,
+      "top_values": {
+        "active": 3,
+        "inactive": 1
+      },
+      "null_count": 1
+    }
+  },
+  "quality_issues": [
+    {
+      "type": "High nulls",
+      "column": "email",
+      "severity": "HIGH",
+      "value": "40.0% missing",
+      "recommendation": "Consider imputation or column exclusion"
+    },
+    {
+      "type": "Invalid range",
+      "column": "amount",
+      "severity": "MEDIUM",
+      "value": "Contains negative values",
+      "recommendation": "Investigate negative entries"
+    }
+  ]
+}
