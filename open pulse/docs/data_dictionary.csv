@@ -1,0 +1,6 @@
+column_name,data_type,description,business_meaning,example_value,related_kpi,notes
+customer_id,integer,Unique identifier for a customer,Customer ID in the CRM system,12456,Customer tracking; customer lifetime value,Primary key; never null; assigned when the customer is created
+trnx_amt,float,Monetary value of one transaction,Revenue collected from the customer for the transaction,150.99,Monthly revenue; average transaction value; customer lifetime value,USD; maps to transaction_amount in the current sample; investigate nulls and negative values
+purchase_date,datetime,Date and time when a transaction occurred,When the sale was completed,2025-01-15,Sales velocity; monthly revenue,UTC timezone; maps to transaction_date in the current sample; never null for completed transactions
+cust_segment,string,Customer market classification,"Business segment used for pricing and go-to-market decisions",B2B,Segment revenue; segment profitability; segment churn rate,"Valid values are B2B, B2C, and SMB; updated monthly from CRM; null values become UNKNOWN"
+flag_churn,integer,Binary indicator of churn within 90 days,Whether the customer left within 90 days of the reference transaction,0,Churn rate; retention model target,Valid values are 0 and 1; target variable for retention models; document the observation window with each model version
