@@ -6,5 +6,7 @@ venv/
 data/processed/*
 data/*.db
 data/*.sqlite
+*.db
+*.sqlite
 !data/raw/.gitkeep
 !data/processed/.gitkeep
