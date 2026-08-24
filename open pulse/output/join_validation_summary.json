@@ -1,0 +1,24 @@
+{
+  "join_counts": {
+    "inner": 3,
+    "left": 4,
+    "outer": 4
+  },
+  "duplication_validation": {
+    "merged_columns": [
+      "customer_id",
+      "name",
+      "email",
+      "signup_date",
+      "id",
+      "amount",
+      "status"
+    ],
+    "max_orders_per_customer": 2,
+    "merged_key_counts": {
+      "1": 2,
+      "2": 1,
+      "3": 1
+    }
+  }
+}
