@@ -1,6 +1,7 @@
 pandas
 numpy
 matplotlib
+scipy
 sqlalchemy
 streamlit
 pytest
