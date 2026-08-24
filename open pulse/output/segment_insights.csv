@@ -1,0 +1,4 @@
+segment,customer_count,churn_rate,total_revenue,revenue_contribution,action
+Enterprise,6,0.0%,$9950,81.3%,Healthy. Maintain current service level.
+SMB,6,50.0%,$1330,10.9%,HIGH PRIORITY: Churn above 10%. Investigate pain points.
+Startup,6,66.7%,$965,7.9%,HIGH PRIORITY: Churn above 10%. Investigate pain points.
