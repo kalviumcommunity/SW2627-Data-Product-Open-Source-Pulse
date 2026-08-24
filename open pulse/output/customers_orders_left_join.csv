@@ -1,0 +1,5 @@
+customer_id,name,email,signup_date,id,amount,status
+1,Alice,alice@example.com,2025-01-15,1.0,100.0,completed
+1,Alice,alice@example.com,2025-01-15,3.0,150.0,completed
+2,Bob,bob@example.com,2025-02-20,2.0,250.0,pending
+3,Carol,carol@example.com,2025-03-10,,,
