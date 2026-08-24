@@ -1,0 +1,31 @@
+{
+  "worst_segment": "Startup",
+  "best_revenue_segment": "Enterprise",
+  "segment_count": 3,
+  "actions": [
+    {
+      "segment": "Enterprise",
+      "customer_count": 6,
+      "churn_rate": "0.0%",
+      "total_revenue": "$9950",
+      "revenue_contribution": "81.3%",
+      "action": "Healthy. Maintain current service level."
+    },
+    {
+      "segment": "SMB",
+      "customer_count": 6,
+      "churn_rate": "50.0%",
+      "total_revenue": "$1330",
+      "revenue_contribution": "10.9%",
+      "action": "HIGH PRIORITY: Churn above 10%. Investigate pain points."
+    },
+    {
+      "segment": "Startup",
+      "customer_count": 6,
+      "churn_rate": "66.7%",
+      "total_revenue": "$965",
+      "revenue_contribution": "7.9%",
+      "action": "HIGH PRIORITY: Churn above 10%. Investigate pain points."
+    }
+  ]
+}

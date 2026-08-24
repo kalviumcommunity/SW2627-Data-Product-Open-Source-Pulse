@@ -1,0 +1,6 @@
+,total_revenue,total_revenue,total_revenue,customer_count,customer_count,customer_count
+product,Basic,Enterprise,Pro,Basic,Enterprise,Pro
+customer_type,,,,,,
+Enterprise,1350,6000,2600,2,2,2
+SMB,180,750,400,2,2,2
+Startup,135,550,280,2,2,2
