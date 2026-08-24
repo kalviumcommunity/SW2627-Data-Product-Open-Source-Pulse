@@ -1,0 +1,25 @@
+{
+  "timestamp_format": "%Y-%m-%d %H:%M:%S",
+  "min_date": "2025-01-15 09:15:00",
+  "max_date": "2025-03-03 22:10:00",
+  "days_in_dataset": 47,
+  "hours_with_data": [
+    9,
+    10,
+    14,
+    18,
+    22
+  ],
+  "weeks_in_dataset": 6,
+  "recency_distribution": {
+    "count": 8.0,
+    "mean": 561.25,
+    "std": 14.159802258506296,
+    "min": 538.0,
+    "25%": 556.0,
+    "50%": 558.5,
+    "75%": 566.0,
+    "max": 581.0
+  },
+  "customers_without_recent_activity": 8
+}
