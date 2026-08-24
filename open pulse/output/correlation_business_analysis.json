@@ -1,0 +1,12 @@
+{
+  "support_tickets <-> churn": {
+    "correlation": 0.8122914203647441,
+    "possible_directions": [
+      "support_tickets -> churn (customer gives up after contacting support)",
+      "churn -> support_tickets (unhappy customers contact support before leaving)",
+      "customer_pain -> both (underlying issue causes both)"
+    ],
+    "data_indicates": "Correlation alone cannot establish direction; customer pain may confound both measures",
+    "action": "Focus on reducing customer pain and test the relationship with time-ordered experiments"
+  }
+}
