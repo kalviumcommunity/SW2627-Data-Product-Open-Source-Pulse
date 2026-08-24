@@ -1,0 +1,6 @@
+customer_id,transaction_date,amount,status
+1,2025-01-15,100,completed
+1,2025-01-15,100,completed
+2,2025-01-20,250,pending
+2,2025-01-20,250,pending
+3,2025-02-01,150,completed
