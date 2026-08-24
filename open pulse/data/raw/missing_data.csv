@@ -1,0 +1,6 @@
+customer_id,name,email,amount,category
+1,Alice,alice@example.com,100,A
+2,Bob,,250,B
+3,Alice,alice@example.com,100,A
+4,,charlie@example.com,500,C
+5,Diana,,200,B

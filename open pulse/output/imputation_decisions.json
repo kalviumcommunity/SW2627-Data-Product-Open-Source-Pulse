@@ -1,0 +1,26 @@
+{
+  "amount": {
+    "column_type": "numerical",
+    "null_count_before": "0",
+    "strategy": "median_imputation",
+    "value_used": 200.0,
+    "business_reasoning": "Median purchase amount is representative of typical transaction. Mean would be skewed by high-value outliers. Maintains distribution integrity.",
+    "risk_assessment": "Low - median is stable metric resistant to outliers"
+  },
+  "email": {
+    "column_type": "categorical_identifier",
+    "null_count_before": "2",
+    "strategy": "drop_rows",
+    "rows_affected": "2",
+    "business_reasoning": "Email is critical for customer contact and marketing campaigns. Rows without email cannot be used for outreach. Data is incomplete.",
+    "risk_assessment": "Low - only affects small percentage of data"
+  },
+  "status_date": {
+    "column_type": "datetime_series",
+    "null_count_before": 0,
+    "strategy": "forward_fill",
+    "interpretation": "Assumes last known status date is still valid until changed",
+    "business_reasoning": "For time-series analysis, forward fill preserves temporal continuity. Status typically does not change frequently.",
+    "risk_assessment": "Medium - assumes no change between observations"
+  }
+}
