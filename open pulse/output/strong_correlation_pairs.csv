@@ -1,0 +1,5 @@
+feature_1,feature_2,correlation
+engagement,transactions_per_month,1.0
+support_tickets,churn,0.8122914203647441
+engagement,churn,-0.7509392614826383
+transactions_per_month,churn,-0.7509392614826383
