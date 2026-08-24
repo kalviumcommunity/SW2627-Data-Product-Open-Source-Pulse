@@ -1,0 +1,11 @@
+{
+  "trend_direction": "up",
+  "trend_magnitude_pct": 59.03,
+  "total_revenue": 12261.0,
+  "growth_months": [
+    "2025-02-01"
+  ],
+  "decline_months": [],
+  "highest_revenue_week": "2025-02-23",
+  "business_analysis": "TREND ANALYSIS:\n\nRolling Average Trend: UP\nChange over last 30 days: 59.0%\n\nMonth-over-month growth: 42.7%\n\nBusiness Implications:\n- Accelerating growth - maintain current strategy\n- Revenue volatility: $65 (measure of noise)\nAction: Use the smoothed trend to plan capacity and investigate daily anomalies."
+}
