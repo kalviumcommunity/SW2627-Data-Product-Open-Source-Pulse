@@ -4,3 +4,4 @@ sqlalchemy
 streamlit
 pytest
 chardet
+matplotlib
