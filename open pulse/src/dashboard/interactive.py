@@ -15,6 +15,7 @@ as standalone HTML and the Streamlit page renders the same objects.
 """
 
 import numpy as np
+import pandas as pd
 import plotly.graph_objects as go
 
 from src.dashboard import theme
@@ -440,3 +441,69 @@ def build_scatter_explorer(customers):
         legend={"title": {"text": "Customer Segment"}, "yanchor": "bottom", "y": 0.02, "x": 0.78},
     )
     return figure, {"pearson": correlation}
+
+
+# ---------------------------------------------------------------------------
+# KPI period comparison
+# ---------------------------------------------------------------------------
+def build_kpi_period_comparison(daily, context, column, label, currency=True):
+    """Daily series with the two compared windows shaded.
+
+    Makes the KPI card's arithmetic visible: the two shaded bands are the exact
+    windows the percentage change is computed over, so a viewer can see that
+    they are the same length rather than taking it on trust.
+    """
+    theme.register_plotly_template()
+
+    frame = daily.copy()
+    frame["date"] = pd.to_datetime(frame["date"])
+    frame = frame.sort_values("date")
+
+    figure = go.Figure()
+    figure.add_trace(
+        go.Scatter(
+            x=frame["date"],
+            y=frame[column],
+            mode="lines",
+            name=label,
+            line={"color": theme.CHART_COLORS[0], "width": 2},
+            hovertemplate=(
+                "<b>%{x|%a %d %b %Y}</b><br>"
+                + label
+                + (": $%{y:,.0f}" if currency else ": %{y:,.0f}")
+                + "<extra></extra>"
+            ),
+        )
+    )
+
+    bands = [
+        ("prior_start", "prior_end", PALETTE["neutral"], "Prior window"),
+        ("current_start", "current_end", theme.CHART_COLORS[1], "Current window"),
+    ]
+    for start_key, end_key, color, name in bands:
+        start, end = context.get(start_key), context.get(end_key)
+        if start is None or end is None:
+            continue
+        figure.add_vrect(
+            x0=start.isoformat(),
+            x1=end.isoformat(),
+            fillcolor=color,
+            opacity=0.13,
+            line_width=0,
+            annotation_text=name,
+            annotation_position="top left",
+        )
+
+    figure.update_layout(
+        title=(
+            f"{label}: {context['current_month']} vs {context['prior_month']}, "
+            f"{context['window_days']} business days each"
+        ),
+        xaxis_title="Date",
+        yaxis_title=label + (" (USD)" if currency else ""),
+        yaxis={"tickprefix": "$", "tickformat": ",.0f"} if currency else {},
+        hovermode="x unified",
+        height=420,
+        showlegend=False,
+    )
+    return figure

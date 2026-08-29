@@ -177,3 +177,110 @@ def load_value_distribution_stats():
         customers, revenue_column="lifetime_value"
     )
     return statistics
+
+
+# ---------------------------------------------------------------------------
+# KPIs
+# ---------------------------------------------------------------------------
+@_cache
+def load_daily_metrics():
+    """Return the daily business metrics used by the KPI layer."""
+    path = _require(config.DAILY_METRICS, "anomaly_detection.py")
+    return pd.read_csv(path, parse_dates=["date"])
+
+
+def _kpis_from_views():
+    """Read the KPIs out of the SQL views, or return None if unavailable.
+
+    Preferred path: the views are the single definition of each metric. The
+    database is gitignored and rebuilt by ``scripts/build_kpis.py``, so a fresh
+    clone will not have it and must fall back.
+    """
+    if not config.DB_PATH.exists():
+        return None
+    try:
+        from sqlalchemy import create_engine
+
+        engine = create_engine(f"sqlite:///{config.DB_PATH}")
+        with engine.connect() as connection:
+            summary = pd.read_sql("SELECT * FROM vw_kpi_summary", connection)
+            churn = pd.read_sql("SELECT * FROM vw_churn_kpi", connection).iloc[0]
+        engine.dispose()
+    except Exception:
+        return None
+
+    lookup = summary.set_index("metric")
+    values = {
+        metric: {
+            "current": float(lookup.loc[metric, "current_value"]),
+            "prior": float(lookup.loc[metric, "prior_value"]),
+            "change_pct": float(lookup.loc[metric, "change_pct"]),
+        }
+        for metric in lookup.index
+    }
+    values["churn_rate"] = {
+        "current": float(churn["current_value"]),
+        "target": float(churn["target_value"]),
+        "change_pct": float(churn["change_pct"]),
+    }
+    return values
+
+
+def _kpis_from_pandas(daily, customers):
+    """Compute the KPIs directly from the committed artifacts."""
+    from src.dashboard import kpi as kpi_module
+
+    current, prior, _context = kpi_module.matched_month_windows(daily)
+
+    def totals(frame):
+        revenue = float(frame["daily_revenue"].sum())
+        transactions = float(frame["transaction_count"].sum())
+        return {
+            "revenue": revenue,
+            "transactions": transactions,
+            "signups": float(frame["signup_rate"].sum()),
+            "avg_order_value": revenue / transactions if transactions else float("nan"),
+        }
+
+    current_totals, prior_totals = totals(current), totals(prior)
+    values = {
+        metric: {
+            "current": current_totals[metric],
+            "prior": prior_totals[metric],
+            "change_pct": kpi_module.percent_change(
+                current_totals[metric], prior_totals[metric]
+            ),
+        }
+        for metric in current_totals
+    }
+    churn_now = float(customers["churn"].mean())
+    values["churn_rate"] = {
+        "current": churn_now,
+        "target": kpi_module.CHURN_TARGET,
+        "change_pct": kpi_module.percent_change(churn_now, kpi_module.CHURN_TARGET),
+    }
+    return values
+
+
+@_cache
+def load_kpi_values():
+    """Return the KPI values, the reporting window, and which path produced them.
+
+    Reads the SQL views when the analytics database is present, and falls back
+    to computing the same definitions in pandas when it is not. Both paths are
+    cross-validated by ``scripts/build_kpis.py``.
+    """
+    from src.dashboard import kpi as kpi_module
+
+    daily = load_daily_metrics()
+    customers = load_customer_segment_data()
+    _current, _prior, context = kpi_module.matched_month_windows(daily)
+
+    values = _kpis_from_views()
+    if values is not None:
+        source = f"SQL views in {config.DB_PATH.name}"
+    else:
+        values = _kpis_from_pandas(daily, customers)
+        source = f"pandas over {config.DAILY_METRICS.name} (database not built)"
+
+    return values, context, source

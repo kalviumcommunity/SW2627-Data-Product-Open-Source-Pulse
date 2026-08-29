@@ -44,6 +44,20 @@ SEGMENT_COLORS = {
     "Individual": "#D55E00",
 }
 
+# KPI status ramp. Deliberately separate from CHART_COLORS: these three encode
+# a judgement (on track / off track / flat), not a category, so they must not
+# be reachable by the series colour cycle. The hexes match the ones
+# funnel_analysis.py already uses, keeping one status vocabulary project-wide.
+#
+# This is a green-red pair, which colour vision deficiency flattens. Every KPI
+# card therefore also carries an arrow and a written status, so colour is a
+# reinforcement of the message and never the only carrier of it.
+STATUS_COLORS = {
+    "good": "#10b981",
+    "bad": "#ef4444",
+    "flat": "#f59e0b",
+}
+
 # Product tier is ordinal, so its three colours form a light-to-dark sequential
 # ramp. Luminance alone separates them, which means the ramp survives greyscale
 # printing and every form of colour vision deficiency without needing hatching.

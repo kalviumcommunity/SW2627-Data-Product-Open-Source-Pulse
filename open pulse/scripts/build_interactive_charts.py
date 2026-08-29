@@ -27,6 +27,10 @@ def save(figure, path, plotlyjs):
         include_plotlyjs=plotlyjs,
         full_html=True,
         config=theme.plotly_config(path.stem),
+        # Without a fixed id, Plotly mints a fresh UUID for the container div on
+        # every export, so rebuilding produces a one-line diff in each file even
+        # when nothing about the chart changed.
+        div_id=f"chart-{path.stem}",
     )
     size_kb = path.stat().st_size / 1024
     print(f"  saved {path.name:38s} ({size_kb:>7,.0f} KB)")

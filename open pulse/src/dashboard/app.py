@@ -30,10 +30,15 @@ st.set_page_config(
 PAGES = {
     "Business Analytics": [
         st.Page(
+            "pages/3_Executive_Summary.py",
+            title="Executive Summary",
+            icon=":material/speed:",
+            default=True,
+        ),
+        st.Page(
             "pages/1_Business_Overview.py",
             title="Business Overview",
             icon=":material/insights:",
-            default=True,
         ),
         st.Page(
             "pages/2_Interactive_Explorer.py",

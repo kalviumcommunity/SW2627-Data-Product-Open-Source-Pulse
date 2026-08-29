@@ -1,0 +1,6 @@
+Metric,Key,Current,Prior,Change_Pct,Arrow,Status,Direction,Basis,Value_Display,Change_Display
+Revenue,revenue,170283.75,163164.21,4.363420139747564,↑,on track,higher_is_better,period,$170.3K,+4.4%
+Transactions,transactions,8421.0,7591.0,10.934000790409696,↑,on track,higher_is_better,period,"8,421",+10.9%
+Avg order value,avg_order_value,20.221321695760597,21.49442892899486,-5.922963747675605,↓,off track,higher_is_better,period,$20.22,-5.9%
+New signups,signups,1682.81,1443.27,16.597033126164888,↑,on track,higher_is_better,period,"1,683",+16.6%
+Churn rate,churn_rate,0.1243139,0.1,24.313899999999997,↑,off track,lower_is_better,target,12.4%,+24.3% vs target
