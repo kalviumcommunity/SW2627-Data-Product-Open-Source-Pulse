@@ -18,6 +18,7 @@ SCRIPTS_DIR = PROJECT_ROOT / "scripts"
 # Artifacts produced by the analysis scripts and consumed by the dashboard.
 SEGMENT_REVENUE_PIVOT = OUTPUT_DIR / "segment_product_revenue_pivot.csv"
 SEGMENT_METRICS = OUTPUT_DIR / "segment_metrics.csv"
+PRODUCT_SEGMENT_METRICS = OUTPUT_DIR / "product_segment_metrics.csv"
 SEGMENT_INSIGHTS = OUTPUT_DIR / "segment_insights.csv"
 SEGMENT_SUMMARY = OUTPUT_DIR / "segment_analysis_summary.json"
 REVENUE_TREND_FEATURES = OUTPUT_DIR / "revenue_trend_features.csv"
@@ -33,6 +34,17 @@ CHART_FILES = {
     5: OUTPUT_DIR / "chart5_tickets_vs_value.png",
 }
 CHARTS_README = OUTPUT_DIR / "CHARTS_README.md"
+
+# Interactive Plotly exports live in their own folder so they never collide
+# with the static PNG report documented by CHARTS_README.md.
+INTERACTIVE_DIR = OUTPUT_DIR / "interactive"
+INTERACTIVE_FILES = {
+    "revenue_trend": INTERACTIVE_DIR / "chart1_revenue_trend.html",
+    "product_performance": INTERACTIVE_DIR / "chart2_product_performance.html",
+    "metric_selector": INTERACTIVE_DIR / "chart3_metric_selector.html",
+    "scatter_explorer": INTERACTIVE_DIR / "chart4_interactive_scatter.html",
+}
+INTERACTIVE_README = INTERACTIVE_DIR / "INTERACTIVE_README.md"
 
 # Order used for every product axis, legend, and colour lookup.
 PRODUCT_ORDER = ["Basic", "Pro", "Enterprise"]
