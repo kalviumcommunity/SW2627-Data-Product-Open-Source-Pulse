@@ -14,6 +14,11 @@ RAW_DIR = DATA_DIR / "raw"
 PROCESSED_DIR = DATA_DIR / "processed"
 OUTPUT_DIR = PROJECT_ROOT / "output"
 SCRIPTS_DIR = PROJECT_ROOT / "scripts"
+SQL_DIR = PROJECT_ROOT / "sql"
+
+# Analytics database. Gitignored: it is rebuilt from the committed artifacts.
+DB_PATH = DATA_DIR / "open_pulse.db"
+KPI_VIEWS_SQL = SQL_DIR / "analytics" / "kpi_views.sql"
 
 # Artifacts produced by the analysis scripts and consumed by the dashboard.
 SEGMENT_REVENUE_PIVOT = OUTPUT_DIR / "segment_product_revenue_pivot.csv"
@@ -24,6 +29,11 @@ SEGMENT_SUMMARY = OUTPUT_DIR / "segment_analysis_summary.json"
 REVENUE_TREND_FEATURES = OUTPUT_DIR / "revenue_trend_features.csv"
 REVENUE_TREND_SUMMARY = OUTPUT_DIR / "revenue_trend_analysis.json"
 CUSTOMER_SEGMENT_DATA = OUTPUT_DIR / "customer_segment_data.csv"
+DAILY_METRICS = OUTPUT_DIR / "daily_metrics.csv"
+
+# KPI outputs
+KPI_SUMMARY = OUTPUT_DIR / "kpi_summary.csv"
+KPI_LINEAGE = OUTPUT_DIR / "KPI_LINEAGE.md"
 
 # Chart files written by scripts/build_charts.py.
 CHART_FILES = {

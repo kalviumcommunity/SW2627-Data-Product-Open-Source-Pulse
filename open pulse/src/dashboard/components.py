@@ -10,7 +10,7 @@ import io
 import matplotlib.pyplot as plt
 import streamlit as st
 
-from src.dashboard import theme
+from src.dashboard import kpi, theme
 
 
 def page_header(title, subtitle, question=None):
@@ -36,6 +36,76 @@ def kpi_row(metrics):
             delta=metric.get("delta"),
             delta_color=metric.get("delta_color", "normal"),
             help=metric.get("help"),
+        )
+
+
+KPI_CARD_CSS = """
+<style>
+.kpi-row { display:flex; gap:.75rem; flex-wrap:wrap; margin:.25rem 0 .5rem; }
+.kpi-card {
+  flex:1 1 0; min-width:9.5rem; padding:.85rem 1rem;
+  border:1px solid rgba(128,128,128,.28); border-radius:.55rem;
+  border-left:5px solid var(--kpi-accent);
+  background:rgba(128,128,128,.05);
+}
+.kpi-label {
+  font-size:.72rem; letter-spacing:.05em; text-transform:uppercase;
+  opacity:.72; margin-bottom:.3rem;
+}
+.kpi-value { font-size:1.75rem; font-weight:700; line-height:1.15; }
+.kpi-change {
+  font-size:.92rem; font-weight:600; color:var(--kpi-accent);
+  margin-top:.3rem; display:flex; align-items:baseline; gap:.35rem;
+}
+.kpi-status { font-size:.72rem; opacity:.66; margin-top:.15rem; }
+</style>
+"""
+
+
+def kpi_cards(table):
+    """Render the KPI row as status cards.
+
+    ``st.metric`` colours a delta green or red only, with no third state, and
+    it cannot show the flat band this project treats as "no meaningful
+    movement". These cards carry the full green / red / amber logic, and pair
+    every colour with an arrow and a written status so the meaning survives
+    greyscale and colour vision deficiency.
+    """
+    st.markdown(KPI_CARD_CSS, unsafe_allow_html=True)
+
+    cards = []
+    for row in table.itertuples():
+        change = row.Change_Display or "no comparison"
+        cards.append(
+            f'<div class="kpi-card" style="--kpi-accent:{row.Color};" '
+            f'title="{row.Question}">'
+            f'<div class="kpi-label">{row.Metric}</div>'
+            f'<div class="kpi-value">{row.Value_Display}</div>'
+            f'<div class="kpi-change"><span>{row.Arrow}</span>'
+            f"<span>{change}</span></div>"
+            f'<div class="kpi-status">{row.Status}</div>'
+            "</div>"
+        )
+    st.markdown(
+        f'<div class="kpi-row">{"".join(cards)}</div>', unsafe_allow_html=True
+    )
+
+
+def kpi_native_metrics(table):
+    """Render the same KPIs with Streamlit's own metric widget.
+
+    Kept alongside the cards to show the idiomatic form, and to make the
+    difference visible: ``delta_color="inverse"`` gets the churn direction
+    right, but there is no amber state for a flat metric.
+    """
+    columns = st.columns(len(table))
+    for column, row in zip(columns, table.itertuples()):
+        column.metric(
+            label=row.Metric,
+            value=row.Value_Display,
+            delta=row.Change_Display,
+            delta_color=kpi.streamlit_delta_color(row.Direction),
+            help=row.Question,
         )
 
 
