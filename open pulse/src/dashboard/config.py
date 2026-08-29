@@ -45,6 +45,16 @@ CHART_FILES = {
 }
 CHARTS_README = OUTPUT_DIR / "CHARTS_README.md"
 
+# Narrative evidence charts and the standalone story document.
+DOCS_DIR = PROJECT_ROOT / "docs"
+NARRATIVE_CHARTS = {
+    "churn_by_segment": OUTPUT_DIR / "narrative1_churn_by_segment.png",
+    "paradox": OUTPUT_DIR / "narrative2_ticket_paradox.png",
+    "opportunity": OUTPUT_DIR / "narrative3_where_the_value_is.png",
+}
+CHURN_NARRATIVE = DOCS_DIR / "CHURN_NARRATIVE.md"
+NARRATIVE_REVIEW = DOCS_DIR / "NARRATIVE_REVIEW.md"
+
 # Interactive Plotly exports live in their own folder so they never collide
 # with the static PNG report documented by CHARTS_README.md.
 INTERACTIVE_DIR = OUTPUT_DIR / "interactive"

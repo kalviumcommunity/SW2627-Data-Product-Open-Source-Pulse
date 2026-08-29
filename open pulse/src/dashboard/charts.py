@@ -408,3 +408,178 @@ def build_tickets_vs_value(customers):
         "correlation is association only, not causation",
     )
     return fig, {"pearson": pearson, "spearman": spearman}
+
+
+# ---------------------------------------------------------------------------
+# Narrative evidence
+# ---------------------------------------------------------------------------
+def build_churn_by_segment(segments, target):
+    """Churn rate and value at risk per segment, against the retention target."""
+    theme.apply_matplotlib_theme()
+    ordered = segments.sort_values("churn_rate", ascending=False)
+
+    fig, (top, bottom) = plt.subplots(
+        2, 1, figsize=(11, 8), sharex=True, gridspec_kw={"height_ratios": [1, 1]}
+    )
+
+    # Three states, matching the KPI cards: meaningfully above target, within a
+    # couple of percent of it, or comfortably below.
+    def _state(rate):
+        deviation = (rate - target) / target * 100
+        if deviation > 2:
+            return PALETTE["danger"]
+        if deviation < -2:
+            return PALETTE["success"]
+        return theme.STATUS_COLORS["flat"]
+
+    colors = [_state(rate) for rate in ordered["churn_rate"]]
+    bars = top.bar(ordered.index, ordered["churn_rate"] * 100, color=colors,
+                   edgecolor="white")
+    top.bar_label(
+        bars,
+        labels=[f"{rate:.1%}" for rate in ordered["churn_rate"]],
+        padding=4,
+        fontweight="bold",
+    )
+    top.axhline(
+        target * 100,
+        color=PALETTE["neutral"],
+        linestyle="--",
+        linewidth=2,
+        label=f"Retention target ({target:.0%})",
+    )
+    top.set_ylabel("Churn rate")
+    above = int(sum((ordered["churn_rate"] - target) / target * 100 > 2))
+    top.set_title(
+        f"{above} of {len(ordered)} Segments Sit Above the Retention Target"
+    )
+    top.yaxis.set_major_formatter(plt.FuncFormatter(lambda v, _: f"{v:.0f}%"))
+    top.set_ylim(0, float(ordered["churn_rate"].max()) * 100 * 1.3)
+    top.legend(loc="upper right")
+    top.grid(axis="x", visible=False)
+
+    value_bars = bottom.bar(
+        ordered.index,
+        ordered["value_at_risk"],
+        color=theme.CHART_COLORS[0],
+        edgecolor="white",
+    )
+    bottom.bar_label(
+        value_bars,
+        labels=[theme.fmt_currency(value) for value in ordered["value_at_risk"]],
+        padding=4,
+        fontweight="bold",
+    )
+    bottom.set_ylabel("Annual value at risk (USD)")
+    bottom.set_xlabel("Customer Segment")
+    bottom.set_title("But the Money at Risk Does Not Follow the Rate")
+    theme.currency_axis(bottom, axis="y")
+    bottom.set_ylim(0, float(ordered["value_at_risk"].max()) * 1.25)
+    bottom.grid(axis="x", visible=False)
+
+    worst = ordered.index[0]
+    enterprise_value = float(ordered.loc["Enterprise", "avg_value"])
+    smallest_risk = float(ordered["value_at_risk"].min())
+    bottom.annotate(
+        f"Enterprise has the best rate, yet one lost account\n"
+        f"({theme.fmt_currency(enterprise_value)}) costs more than every\n"
+        f"{ordered['value_at_risk'].idxmin()} customer we lose in a year "
+        f"({theme.fmt_currency(smallest_risk)})",
+        xy=(list(ordered.index).index("Enterprise"),
+            float(ordered.loc["Enterprise", "value_at_risk"])),
+        xytext=(0.28, float(ordered["value_at_risk"].max()) * 0.70),
+        arrowprops={"arrowstyle": "->", "color": PALETTE["danger"], "lw": 2},
+        fontsize=10,
+        bbox=theme.annotation_box(),
+    )
+
+    fig.tight_layout(rect=(0, 0.03, 1, 1))
+    _source_note(fig, "Source: output/customer_segment_data.csv | "
+                      f"worst rate: {worst}")
+    return fig
+
+
+def build_ticket_paradox(pooled_r, within_segment_r, small_sample_r, small_n):
+    """The pooled correlation against the within-segment correlations."""
+    theme.apply_matplotlib_theme()
+    fig, ax = plt.subplots(figsize=(11, 6))
+
+    labels = ["All customers\npooled"] + [
+        f"{segment}\nonly" for segment in within_segment_r
+    ]
+    values = [pooled_r] + list(within_segment_r.values())
+    colors = [PALETTE["danger"]] + [theme.CHART_COLORS[0]] * len(within_segment_r)
+
+    bars = ax.bar(labels, values, color=colors, edgecolor="white")
+    ax.bar_label(bars, labels=[f"{value:+.2f}" for value in values],
+                 padding=4, fontweight="bold")
+    ax.axhline(0, color="#444444", linewidth=1.2)
+    ax.axhspan(-0.1, 0.1, color=PALETTE["neutral"], alpha=0.13,
+               label="No meaningful relationship")
+
+    ax.set_title("The Link Between Tickets and Churn Disappears Within Each Segment")
+    ax.set_ylabel("Correlation between support tickets and churn")
+    ax.set_ylim(min(values) - 0.18, max(max(values), 0.1) + 0.22)
+    ax.grid(axis="x", visible=False)
+    ax.legend(loc="upper right")
+
+    ax.annotate(
+        "Pooled, tickets look protective.\n"
+        "Compare like with like and the link vanishes:\n"
+        "segment was driving both all along.",
+        xy=(0, pooled_r),
+        xytext=(0.75, min(values) - 0.10),
+        arrowprops={"arrowstyle": "->", "color": PALETTE["danger"], "lw": 2},
+        fontsize=10,
+        bbox=theme.annotation_box(),
+    )
+
+    fig.tight_layout(rect=(0, 0.03, 1, 1))
+    _source_note(
+        fig,
+        "Source: output/customer_segment_data.csv (n=1,000) | "
+        f"the {small_n}-row correlation_data.csv reports {small_sample_r:+.2f} "
+        "for the same pair",
+    )
+    return fig
+
+
+def build_opportunity(segments):
+    """Where the recoverable churn value actually sits."""
+    theme.apply_matplotlib_theme()
+    ordered = segments.sort_values("recoverable", ascending=True)
+    total = float(ordered["recoverable"].sum())
+
+    fig, ax = plt.subplots(figsize=(11, 5.5))
+    colors = [
+        PALETTE["danger"] if value == ordered["recoverable"].max()
+        else theme.CHART_COLORS[0]
+        for value in ordered["recoverable"]
+    ]
+    bars = ax.barh(ordered.index, ordered["recoverable"], color=colors,
+                   edgecolor="white")
+    ax.bar_label(
+        bars,
+        labels=[
+            f"{theme.fmt_currency(value)}  ({value / total:.0%})" if total else "$0"
+            for value in ordered["recoverable"]
+        ],
+        padding=6,
+        fontweight="bold",
+    )
+
+    leader = ordered.index[-1]
+    ax.set_title(f"Nine in Ten Recoverable Dollars Sit in One Segment: {leader}")
+    ax.set_xlabel("Recoverable annual value if the segment reaches the target (USD)")
+    ax.set_ylabel("Customer Segment")
+    theme.currency_axis(ax, axis="x")
+    ax.set_xlim(0, float(ordered["recoverable"].max()) * 1.45)
+    ax.grid(axis="y", visible=False)
+
+    fig.tight_layout(rect=(0, 0.03, 1, 1))
+    _source_note(
+        fig,
+        f"Source: output/customer_segment_data.csv | total recoverable "
+        f"{theme.fmt_currency(total)} per year",
+    )
+    return fig

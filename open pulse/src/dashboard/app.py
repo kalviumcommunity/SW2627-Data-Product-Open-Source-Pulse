@@ -45,6 +45,11 @@ PAGES = {
             title="Interactive Explorer",
             icon=":material/touch_app:",
         ),
+        st.Page(
+            "pages/4_Churn_Story.py",
+            title="Why Customers Leave",
+            icon=":material/menu_book:",
+        ),
     ],
 }
 

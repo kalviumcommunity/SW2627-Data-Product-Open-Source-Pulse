@@ -5,6 +5,8 @@ defaults that all chart builders share. Importing this module and calling
 ``apply_matplotlib_theme()`` is the only styling step a chart should need.
 """
 
+import re
+
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
@@ -96,6 +98,19 @@ def fmt_count(value, _pos=None):
 def fmt_percent(value, decimals=1):
     """Format a 0-1 fraction as a percentage."""
     return f"{value * 100:.{decimals}f}%"
+
+
+def md_safe(text):
+    """Escape dollar signs so Streamlit does not read them as LaTeX.
+
+    Streamlit's markdown treats ``$...$`` as a maths span. Two currency figures
+    in one string therefore swallow everything between them and render it as an
+    equation, which silently mangles any sentence quoting more than one amount.
+    Escaping each dollar keeps the text literal.
+    """
+    if text is None:
+        return None
+    return re.sub(r"(?<!\\)\$", r"\\$", str(text))
 
 
 def label_color(background_hex):
