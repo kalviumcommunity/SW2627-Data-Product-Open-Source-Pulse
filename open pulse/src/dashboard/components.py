@@ -128,12 +128,12 @@ def chart_block(fig, insight, filename, chart_type=None, rationale=None, key=Non
     st.pyplot(fig, width="stretch")
     plt.close(fig)
 
-    st.info(insight, icon=":material/lightbulb:")
+    st.info(theme.md_safe(insight), icon=":material/lightbulb:")
 
     left, right = st.columns([3, 1])
     if chart_type and rationale:
         with left.expander(f"Why a {chart_type.lower()}?"):
-            st.markdown(rationale)
+            st.markdown(theme.md_safe(rationale))
     right.download_button(
         "Download PNG",
         data=image,
@@ -158,10 +158,10 @@ def plotly_block(figure, insight, filename, interactions=None, key=None):
         config=theme.plotly_config(filename),
         key=key,
     )
-    st.info(insight, icon=":material/lightbulb:")
+    st.info(theme.md_safe(insight), icon=":material/lightbulb:")
     if interactions:
         with st.expander("What you can do with this chart"):
-            st.markdown(interactions)
+            st.markdown(theme.md_safe(interactions))
 
 
 def palette_swatches():

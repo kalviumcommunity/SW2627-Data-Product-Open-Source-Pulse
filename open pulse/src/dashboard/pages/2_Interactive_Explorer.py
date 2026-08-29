@@ -116,10 +116,10 @@ def render():
             key="plot_selector",
         )
 
-    st.info(
+    st.info(theme.md_safe(
         "Every tier holds the same six customers, so the dropdown shows a flat "
         "customer count while revenue and average value both rank "
-        "Enterprise > Pro > Basic. The revenue gap is entirely price, not volume.",
+        "Enterprise > Pro > Basic. The revenue gap is entirely price, not volume."),
         icon=":material/lightbulb:",
     )
 
