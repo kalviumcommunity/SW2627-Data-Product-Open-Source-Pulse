@@ -1,1 +1,48 @@
-"""Streamlit entry point for the contributor-onboarding dashboard."""
+"""Streamlit entry point for the Open Pulse analytics dashboard.
+
+Run from the project root:
+
+    streamlit run src/dashboard/app.py
+
+Streamlit places this file's own directory on ``sys.path``, not the project
+root, so the bootstrap below runs before any project import. Pages are
+registered explicitly through ``st.navigation`` rather than relying on
+filename discovery, which keeps the ordering, grouping, and titles under our
+control and stops unfinished page stubs from appearing in the sidebar.
+"""
+
+import sys
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+import streamlit as st  # noqa: E402
+
+st.set_page_config(
+    page_title="Open Pulse Analytics",
+    page_icon=":material/monitoring:",
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
+
+PAGES = {
+    "Business Analytics": [
+        st.Page(
+            "pages/1_Business_Overview.py",
+            title="Business Overview",
+            icon=":material/insights:",
+            default=True,
+        ),
+    ],
+}
+
+with st.sidebar:
+    st.markdown("### Open Pulse")
+    st.caption(
+        "Analytics over the outputs of the data pipeline in `scripts/`. "
+        "Every figure is built from a committed artifact in `output/`."
+    )
+
+st.navigation(PAGES).run()
