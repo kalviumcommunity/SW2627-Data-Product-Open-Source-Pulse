@@ -144,3 +144,81 @@ def annotation_box(facecolor="#fff8dc"):
         "edgecolor": PALETTE["neutral"],
         "alpha": 0.92,
     }
+
+
+# ---------------------------------------------------------------------------
+# Plotly
+# ---------------------------------------------------------------------------
+# The interactive charts must look like the static ones. Rather than restating
+# colours in Plotly syntax, the template below is generated from the same
+# PALETTE and CHART_COLORS defined above, so a palette change propagates to
+# both rendering engines at once.
+PLOTLY_TEMPLATE_NAME = "open_pulse"
+
+HOVER_LABEL = {
+    "bgcolor": "white",
+    "bordercolor": "#cccccc",
+    "font": {"size": 13, "family": "Helvetica, Arial, sans-serif"},
+}
+
+
+def register_plotly_template():
+    """Register the project's Plotly template and make it the default.
+
+    Plotly is imported lazily so that the matplotlib-only code path, including
+    ``scripts/build_charts.py``, never needs it installed.
+    """
+    import plotly.graph_objects as go
+    import plotly.io as pio
+
+    if PLOTLY_TEMPLATE_NAME in pio.templates:
+        pio.templates.default = PLOTLY_TEMPLATE_NAME
+        return pio.templates[PLOTLY_TEMPLATE_NAME]
+
+    template = go.layout.Template()
+    template.layout = go.Layout(
+        colorway=CHART_COLORS,
+        font={"family": "Helvetica, Arial, sans-serif", "size": 13, "color": "#222222"},
+        title={"font": {"size": 18, "color": "#111111"}, "x": 0.0, "xanchor": "left"},
+        paper_bgcolor="white",
+        plot_bgcolor="white",
+        hoverlabel=HOVER_LABEL,
+        margin={"l": 70, "r": 30, "t": 90, "b": 60},
+        xaxis={
+            "gridcolor": "#e6e6e6",
+            "linecolor": "#cccccc",
+            "zeroline": False,
+            "title": {"font": {"size": 14}},
+        },
+        yaxis={
+            "gridcolor": "#e6e6e6",
+            "linecolor": "#cccccc",
+            "zeroline": False,
+            "title": {"font": {"size": 14}},
+        },
+        legend={
+            "bgcolor": "rgba(255,255,255,0.9)",
+            "bordercolor": "#cccccc",
+            "borderwidth": 1,
+        },
+    )
+    pio.templates[PLOTLY_TEMPLATE_NAME] = template
+    pio.templates.default = PLOTLY_TEMPLATE_NAME
+    return template
+
+
+# Modebar configuration shared by every interactive chart. Zoom, pan, reset,
+# and box/lasso select are Plotly defaults; this only removes the buttons that
+# do not apply to business charts and names the PNG a viewer would download.
+def plotly_config(filename="open_pulse_chart"):
+    """Return the shared Plotly modebar configuration."""
+    return {
+        "displaylogo": False,
+        "scrollZoom": True,
+        "modeBarButtonsToRemove": ["autoScale2d"],
+        "toImageButtonOptions": {
+            "format": "png",
+            "filename": filename,
+            "scale": 2,
+        },
+    }

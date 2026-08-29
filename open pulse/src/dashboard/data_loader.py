@@ -115,6 +115,25 @@ def load_segment_summary():
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+@_cache
+def load_product_metrics():
+    """Return revenue, customer count, and average revenue per product line.
+
+    Rolls the per-segment breakdown up to the product level and derives the
+    average revenue per customer, which the interactive hover tooltips show
+    alongside the plotted revenue.
+    """
+    path = _require(config.PRODUCT_SEGMENT_METRICS, "analyze_segments.py")
+    detail = pd.read_csv(path)
+    metrics = detail.groupby("product").agg(
+        revenue=("total_revenue", "sum"),
+        customers=("customer_count", "sum"),
+    )
+    metrics["avg_revenue_per_customer"] = metrics["revenue"] / metrics["customers"]
+    metrics["revenue_share_pct"] = metrics["revenue"] / metrics["revenue"].sum() * 100
+    return metrics.reindex(config.PRODUCT_ORDER)
+
+
 # ---------------------------------------------------------------------------
 # Revenue trend
 # ---------------------------------------------------------------------------

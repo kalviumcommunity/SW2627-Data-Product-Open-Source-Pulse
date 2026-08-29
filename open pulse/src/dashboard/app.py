@@ -35,6 +35,11 @@ PAGES = {
             icon=":material/insights:",
             default=True,
         ),
+        st.Page(
+            "pages/2_Interactive_Explorer.py",
+            title="Interactive Explorer",
+            icon=":material/touch_app:",
+        ),
     ],
 }
 

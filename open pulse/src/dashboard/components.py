@@ -74,6 +74,26 @@ def chart_block(fig, insight, filename, chart_type=None, rationale=None, key=Non
     )
 
 
+def plotly_block(figure, insight, filename, interactions=None, key=None):
+    """Render an interactive Plotly figure with its insight and interactions.
+
+    ``theme=None`` matters: Streamlit otherwise applies its own chart theme and
+    silently overrides the project colours, so the interactive charts would
+    stop matching the static ones.
+    """
+    st.plotly_chart(
+        figure,
+        width="stretch",
+        theme=None,
+        config=theme.plotly_config(filename),
+        key=key,
+    )
+    st.info(insight, icon=":material/lightbulb:")
+    if interactions:
+        with st.expander("What you can do with this chart"):
+            st.markdown(interactions)
+
+
 def palette_swatches():
     """Render the project palette as inline colour swatches."""
 
