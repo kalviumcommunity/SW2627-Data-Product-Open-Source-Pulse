@@ -25,8 +25,16 @@ def page_header(title, subtitle, question=None):
 def kpi_row(metrics):
     """Render a row of headline metrics.
 
-    Each metric is a dict with ``label``, ``value``, and an optional ``delta``
-    and ``help`` entry.
+    Each metric is a dict with ``label``, ``value``, and optionally ``help``
+    plus one of:
+
+    ``delta``
+        A real period-over-period change. Streamlit draws a direction arrow,
+        which is correct here because the value moved.
+    ``caption``
+        Context that is not a change - "78% of the prize", "at Enterprise's
+        3.0%". Rendered as plain text beneath the value, because ``delta``
+        would attach an upward arrow to a phrase that never went up.
     """
     columns = st.columns(len(metrics))
     for column, metric in zip(columns, metrics):
@@ -37,6 +45,8 @@ def kpi_row(metrics):
             delta_color=metric.get("delta_color", "normal"),
             help=metric.get("help"),
         )
+        if metric.get("caption"):
+            column.caption(theme.md_safe(metric["caption"]))
 
 
 KPI_CARD_CSS = """

@@ -138,8 +138,7 @@ def render():
             {
                 "label": "Customers shown",
                 "value": f"{len(filtered):,}",
-                "delta": f"of {len(customers):,}",
-                "delta_color": "off",
+                "caption": f"of {len(customers):,}",
             },
             {
                 "label": "Median lifetime value",

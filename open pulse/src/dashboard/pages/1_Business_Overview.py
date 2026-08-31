@@ -45,8 +45,7 @@ def render():
             {
                 "label": "Leading product",
                 "value": leader,
-                "delta": f"{leader_share:.1%} of revenue",
-                "delta_color": "off",
+                "caption": f"{leader_share:.1%} of revenue",
                 "help": "Product line with the largest revenue contribution.",
             },
             {
@@ -58,8 +57,7 @@ def render():
             {
                 "label": "Median customer value",
                 "value": theme.fmt_currency(distribution["median"]),
-                "delta": f"mean {theme.fmt_currency(distribution['mean'])}",
-                "delta_color": "off",
+                "caption": f"mean {theme.fmt_currency(distribution['mean'])}",
                 "help": (
                     "The distribution is right-skewed, so the median is the "
                     "honest description of a typical customer."
@@ -68,8 +66,7 @@ def render():
             {
                 "label": "Leading segment",
                 "value": top_segment,
-                "delta": f"{segment_metrics['revenue_contribution'].max():.1f}% of revenue",
-                "delta_color": "off",
+                "caption": f"{segment_metrics['revenue_contribution'].max():.1f}% of revenue",
                 "help": "Customer segment contributing the most revenue.",
             },
         ]

@@ -90,6 +90,21 @@ def fmt_currency(value, _pos=None):
     return f"${value:,.0f}"
 
 
+def fmt_currency_exec(value):
+    """Money rounded to the precision an executive actually reads.
+
+    "$12.1M" lands; "$12,094,579" invites the reader to check the arithmetic
+    instead of the argument. Exact figures belong in the technical appendix.
+    Differs from ``fmt_currency`` by dropping the decimal on thousands.
+    """
+    magnitude = abs(value)
+    if magnitude >= 1_000_000:
+        return f"${value / 1_000_000:.1f}M"
+    if magnitude >= 1_000:
+        return f"${value / 1_000:,.0f}K"
+    return f"${value:,.0f}"
+
+
 def fmt_count(value, _pos=None):
     """Format a plain count with thousands separators."""
     return f"{value:,.0f}"
