@@ -39,20 +39,17 @@ def render():
             {
                 "label": "Lost to churn each year",
                 "value": theme.fmt_currency(e["value_at_risk"]),
-                "delta": f"{e['value_at_risk'] / e['book_value']:.1%} of the book",
-                "delta_color": "off",
+                "caption": f"{e['value_at_risk'] / e['book_value']:.1%} of the book",
             },
             {
                 "label": "Recoverable to target",
                 "value": theme.fmt_currency(e["recoverable_total"]),
-                "delta": f"if all segments reach {e['target']:.0%}",
-                "delta_color": "off",
+                "caption": f"if all segments reach {e['target']:.0%}",
             },
             {
                 "label": "Concentrated in",
                 "value": e["leader"],
-                "delta": f"{e['leader_share']:.0%} of the opportunity",
-                "delta_color": "off",
+                "caption": f"{e['leader_share']:.0%} of the opportunity",
             },
         ]
     )

@@ -50,6 +50,11 @@ PAGES = {
             title="Why Customers Leave",
             icon=":material/menu_book:",
         ),
+        st.Page(
+            "pages/5_Decision_Brief.py",
+            title="Decision Brief",
+            icon=":material/gavel:",
+        ),
     ],
 }
 

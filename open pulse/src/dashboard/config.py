@@ -53,6 +53,9 @@ NARRATIVE_CHARTS = {
     "opportunity": OUTPUT_DIR / "narrative3_where_the_value_is.png",
 }
 CHURN_NARRATIVE = DOCS_DIR / "CHURN_NARRATIVE.md"
+EXECUTIVE_SUMMARY = DOCS_DIR / "EXECUTIVE_SUMMARY.md"
+TECHNICAL_ANALYSIS = DOCS_DIR / "TECHNICAL_ANALYSIS.md"
+AUDIENCE_VERSIONS = DOCS_DIR / "AUDIENCE_VERSIONS.md"
 NARRATIVE_REVIEW = DOCS_DIR / "NARRATIVE_REVIEW.md"
 
 # Interactive Plotly exports live in their own folder so they never collide
