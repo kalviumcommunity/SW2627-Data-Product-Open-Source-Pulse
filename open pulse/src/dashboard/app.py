@@ -55,6 +55,11 @@ PAGES = {
             title="Decision Brief",
             icon=":material/gavel:",
         ),
+        st.Page(
+            "pages/6_Dashboard_Layout.py",
+            title="Dashboard Layout",
+            icon=":material/view_quilt:",
+        ),
     ],
 }
 
