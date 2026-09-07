@@ -127,6 +127,20 @@ elif page == "Data Explorer":
             + " columns)"
         )
 
+        # "workflow_selected_segment" - stores the segment chosen in Step 1.
+        # Without session state, adjusting any sidebar filter would rerun the
+        # script and reset this selectbox to its default.
+        if "workflow_selected_segment" not in st.session_state:
+            st.session_state["workflow_selected_segment"] = "All"
+        # "workflow_step" - tracks whether Step 1 is done (1) or Step 2 is
+        # reached (2). Prevents Step 2 from rendering before Step 1 is confirmed.
+        if "workflow_step" not in st.session_state:
+            st.session_state["workflow_step"] = 1
+        # "workflow_analysis_result" - caches the Step 2 computation so the
+        # result is available for display without recomputing on every rerun.
+        if "workflow_analysis_result" not in st.session_state:
+            st.session_state["workflow_analysis_result"] = None
+
         # --- Detect column types for adaptive filters --------------------
         date_col = None
         for col in df.columns:
@@ -197,6 +211,18 @@ elif page == "Data Explorer":
 
         if st.sidebar.button("Reset Filters"):
             for key in filter_keys:
+                if key in st.session_state:
+                    del st.session_state[key]
+            st.rerun()
+
+        # --- Reset workflow (session state, not just filter widgets) -----
+        if st.sidebar.button("Reset Workflow"):
+            _workflow_keys = [
+                "workflow_selected_segment",
+                "workflow_step",
+                "workflow_analysis_result",
+            ]
+            for key in _workflow_keys:
                 if key in st.session_state:
                     del st.session_state[key]
             st.rerun()
@@ -294,6 +320,58 @@ elif page == "Data Explorer":
                 file_name="data.csv",
                 mime="text/csv",
             )
+
+        # --- Multi-step analysis workflow (session state persists) -------
+        st.divider()
+        st.header("Analysis Workflow")
+
+        st.subheader("Step 1: Select Analysis Segment")
+        if cat_col is not None:
+            available = sorted(filtered_df[cat_col].dropna().unique().tolist())
+            opts = ["All"] + available
+        else:
+            opts = ["All"]
+
+        current_seg = st.session_state["workflow_selected_segment"]
+        if current_seg not in opts:
+            current_seg = "All"
+            st.session_state["workflow_selected_segment"] = "All"
+        seg_index = opts.index(current_seg) if current_seg in opts else 0
+        step1_segment = st.selectbox(
+            "Choose a segment to analyse", opts, index=seg_index
+        )
+
+        if st.button("Confirm Segment"):
+            st.session_state["workflow_selected_segment"] = step1_segment
+            st.session_state["workflow_step"] = 2
+
+        if st.session_state["workflow_step"] >= 2:
+            st.subheader("Step 2: Segment Analysis")
+            chosen = st.session_state["workflow_selected_segment"]
+            if chosen == "All":
+                analysis_df = filtered_df
+            else:
+                analysis_df = filtered_df[filtered_df[cat_col] == chosen]
+
+            if len(analysis_df) == 0:
+                st.warning(
+                    "No data for the selected segment after the current "
+                    "sidebar filters. Try broadening the filters."
+                )
+            else:
+                if slider_col is not None:
+                    result = float(analysis_df[slider_col].sum())
+                    st.session_state["workflow_analysis_result"] = result
+                    st.metric(f"{slider_col} Total", f"{result:,.0f}")
+                else:
+                    result = len(analysis_df)
+                    st.session_state["workflow_analysis_result"] = result
+                    st.metric("Row Count", f"{result:,}")
+
+                st.caption(
+                    f"Analysing: {chosen}. This selection persists when "
+                    "sidebar filters change because it lives in session state."
+                )
 
     else:
         st.info("Upload a CSV or JSON file to begin.")
