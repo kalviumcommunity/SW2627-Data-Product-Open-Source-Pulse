@@ -10,3 +10,4 @@ data/*.sqlite
 *.sqlite
 !data/raw/.gitkeep
 !data/processed/.gitkeep
+.kilo/
