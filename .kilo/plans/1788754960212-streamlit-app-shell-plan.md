@@ -69,13 +69,23 @@ Validation: `pip install -r requirements.txt && streamlit run app.py` with no er
 
 ## Validation checklist
 
-- [ ] Sidebar radio switches between all three sections
-- [ ] Only the selected section is visible per selection
-- [ ] `st.columns` used for KPI cards and side-by-side content in every section
-- [ ] `st.expander` present in every section for optional/detail content
-- [ ] `st.header`, `st.subheader`, `st.divider` used consistently
-- [ ] KPIs are the first content shown in Overview (no scroll needed)
-- [ ] App starts cleanly from `pip install -r requirements.txt && streamlit run app.py`
+- [x] Sidebar radio switches between all three sections
+- [x] Only the selected section is visible per selection
+- [x] `st.columns` used for KPI cards and side-by-side content in every section
+- [x] `st.expander` present in every section for optional/detail content
+- [x] `st.header`, `st.subheader`, `st.divider` used consistently
+- [x] KPIs are the first content shown in Overview (no scroll needed)
+- [x] App starts cleanly from `pip install -r requirements.txt && streamlit run app.py`
+
+### Part A validation results
+
+Verified via Streamlit AppTest API (`st.AppTest.from_file`) + Playwright browser automation:
+- Overview page renders all 5 KPI metric cards, sidebar navigation works
+- Data Explorer section active; file uploader + info message visible
+- CSV upload: success message with row/column count, preview, stats, chart
+- JSON upload: success message with row/column count, preview, stats, chart
+- Malformed CSV → error message, no traceback
+- Empty CSV → warning message, no traceback
 
 ---
 
@@ -96,7 +106,7 @@ Extend the existing `app.py` Data Explorer section to accept user-uploaded CSV/J
 
 ### Integration target
 
-Replace the Data Explorer `elif page == "Data Explorer":` block (lines 98–118 of `app.py`) with the upload + preview flow. The section's `st.title("Data Explorer")` stays; everything below it becomes the upload system.
+Replace the Data Explorer `elif page == "Data Explorer":` block (lines 98–118 of original `app.py`) with the upload + preview flow. The section's `st.title("Data Explorer")` stays; everything below it becomes the upload system.
 
 ### Task 1 — File upload (CSV + JSON)
 
@@ -174,21 +184,113 @@ else:
 
 ### Validation checklist
 
-- [ ] CSV file loads and renders preview + statistics + bar chart
-- [ ] JSON file loads and renders preview + statistics + bar chart
-- [ ] No file uploaded → `st.info` message, no errors
-- [ ] Malformed file → `st.error` message, no traceback
-- [ ] Empty file → `st.warning` message, no traceback
-- [ ] Column summary shows Column, Type, Non-Null, Null Count, Null %
-- [ ] Descriptive statistics show for numeric columns only
-- [ ] Quick Exploration bar chart updates when dropdown changes
-- [ ] `pip install -r requirements.txt && streamlit run app.py` runs without errors
+- [x] CSV file loads and renders preview + statistics + bar chart
+- [x] JSON file loads and renders preview + statistics + bar chart
+- [x] No file uploaded → `st.info` message, no errors
+- [x] Malformed file → `st.error` message, no traceback
+- [x] Empty file → `st.warning` message, no traceback
+- [x] Column summary shows Column, Type, Non-Null, Null Count, Null %
+- [x] Descriptive statistics show for numeric columns only
+- [x] Quick Exploration bar chart updates when dropdown changes
+- [x] `pip install -r requirements.txt && streamlit run app.py` runs without errors
 
-## Ordered implementation steps
+### Part B validation results
 
-1. Edit `app.py` Data Explorer block: add `st.file_uploader`, try/except loader, success message.
-2. Add Task 2 preview (metrics, first 10 rows, column summary).
-3. Add Task 3 descriptive statistics.
-4. Add Task 5 quick exploration bar chart.
-5. Verify with clean venv: install deps + run app.
-6. Test upload of a sample CSV, sample JSON, malformed file, and empty file.
+Verified via Playwright browser automation (43+ assertions):
+- CSV upload: success "10 rows, 5 columns", all preview sections, all stats, chart rendered (33 SVGs)
+- JSON upload: success "10 rows, 5 columns", date picker appeared (auto-parsed date column)
+- Malformed CSV: error "Could not read this file", no traceback
+- Empty CSV: warning "Uploaded file is empty", no traceback
+- No file: info message "Upload a CSV or JSON file to begin."
+
+---
+
+## Part C — Streamlit Filters & Interactive Widgets
+
+Add adaptive sidebar filters to the Data Explorer section so users can filter the uploaded dataset by date, category, and numeric threshold, with all downstream content reacting instantly.
+
+### Design decisions
+
+| Decision | Choice | Rationale |
+|----------|--------|-----------|
+| Filter placement | `st.sidebar` below the navigation radio | Keeps all controls in one panel; only appears when data is loaded |
+| Widget adaptability | Scan DataFrame schema to decide which widgets to render | Works with any uploaded data — date_input for datetime cols, multiselect for categorical, slider for numeric |
+| ID column exclusion | Skip columns ending in `_id` or named exactly `id` for slider | Prevents a meaningless row-index slider |
+| Date auto-detection | Try `pd.to_datetime` on object columns; treat as date if >50% parse | Catches string-encoded dates in CSV uploads |
+| Filter application | Build a boolean `mask` and apply with `df[mask]` | Clean, extensible — easy to add more filters |
+| Reset strategy | Store widget keys in a list; delete only those keys from `st.session_state` on reset | Preserves the file_uploader state; user doesn't need to re-upload |
+| `st.rerun()` | Used after deleting session state keys | Forces fresh widget creation with defaults |
+| Preview source | Uses `filtered_df` (not raw `df`) | All preview/stats/charts reflect the current filter state |
+
+### Task 1 — Three widget types (adaptive)
+
+After loading `df`, scan column types, then render sidebar filters:
+- **Date picker** (`st.sidebar.date_input`): appears if any column is datetime (native or auto-parsed from string)
+- **Multi-select** (`st.sidebar.multiselect`): first object/categorical column, all values selected by default
+- **Slider** (`st.sidebar.slider`): first numeric non-ID column, full range by default
+- **Radio** (`st.sidebar.radio`): "Chart type" — Bar / Line (always present)
+
+All widgets have explicit `key=` attributes tracked in `filter_keys` list.
+
+### Task 2 — Wire filters to DataFrame
+
+Build a boolean mask from all active widgets:
+```python
+mask = pd.Series([True] * len(df), index=df.index)
+if date_range: mask &= (df[date_col] >= start) & (df[date_col] <= end)
+if selected_values: mask &= df[cat_col].isin(selected_values)
+if val_range: mask &= (df[slider_col] >= val_range[0]) & (df[slider_col] <= val_range[1])
+filtered_df = df[mask]
+```
+All downstream content (preview, stats, exploration, raw data) reads from `filtered_df`.
+
+### Task 3 — Meaningful defaults
+
+Every widget defaults to show all data:
+- Date range: full data span (min → max)
+- Multi-select: all values selected
+- Slider: full range (min → max)
+- Radio: "Bar" (first option)
+
+Result on first load: "Showing 10 of 10 records" — no empty state.
+
+### Task 4 — Empty filter handling
+
+```python
+if len(filtered_df) == 0:
+    st.warning("No data matches the current filters. Try broadening your selection.")
+    st.stop()
+```
+Placed after filter application and before any preview renders. No traceback, no crash.
+
+### Task 5 — Reset mechanism
+
+```python
+if st.sidebar.button("Reset Filters"):
+    for key in filter_keys:
+        if key in st.session_state:
+            del st.session_state[key]
+    st.rerun()
+```
+Deletes only filter widget keys from session state, preserving the uploaded file. `st.rerun()` re-creates widgets with fresh defaults.
+
+### Validation checklist
+
+- [x] At least 3 widget types visible (date_input, multiselect, slider, radio)
+- [x] Changing any widget updates the displayed data (row count changes)
+- [x] All widgets have meaningful defaults (full dataset visible on first load)
+- [x] Empty filter combination shows warning, no crash, no traceback
+- [x] Reset button restores all widgets to defaults (full dataset shown again)
+- [x] `pip install -r requirements.txt && streamlit run app.py` runs without errors
+
+### Part C validation results
+
+Verified via Playwright browser automation (43 assertions):
+- CSV upload (with date column): 4 widgets visible (date picker, multiselect, slider, radio) + reset button
+- Default view shows "10 of 10 records"
+- Clear multiselect → "No data matches" warning appears
+- Reset Filters → restores "10 of 10 records"
+- JSON upload: same 4 widgets, date picker auto-appears (date column parsed)
+- Malformed CSV → error message, no traceback
+- Empty CSV → warning message, no traceback
+- All preview sections, statistics, charts, and raw data expander render correctly with filtered data

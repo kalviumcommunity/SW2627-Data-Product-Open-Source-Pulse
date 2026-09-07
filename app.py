@@ -127,54 +127,170 @@ elif page == "Data Explorer":
             + " columns)"
         )
 
-        # --- Task 2: automatic preview ---------------------------------
+        # --- Detect column types for adaptive filters --------------------
+        date_col = None
+        for col in df.columns:
+            if pd.api.types.is_datetime64_any_dtype(df[col]):
+                date_col = col
+                break
+            if df[col].dtype == "object":
+                try:
+                    parsed = pd.to_datetime(df[col], errors="coerce")
+                    if parsed.notna().sum() > len(df[col]) * 0.5:
+                        df[col] = parsed
+                        date_col = col
+                        break
+                except Exception:
+                    continue
+
+        categorical_cols = df.select_dtypes(include="object").columns.tolist()
+        numeric_cols = df.select_dtypes(include="number").columns.tolist()
+        non_id_numeric = [
+            c for c in numeric_cols
+            if not c.lower().endswith("_id") and c.lower() not in ("id",)
+        ]
+        slider_col = non_id_numeric[0] if non_id_numeric else None
+
+        # --- Sidebar filters --------------------------------------------
+        st.sidebar.header("Filters")
+        filter_keys = []
+
+        date_range = None
+        if date_col is not None:
+            d_min = df[date_col].min().date()
+            d_max = df[date_col].max().date()
+            date_range = st.sidebar.date_input(
+                "Date Range", value=(d_min, d_max), key="date_range_filter"
+            )
+            filter_keys.append("date_range_filter")
+
+        cat_col = None
+        selected_values = None
+        if categorical_cols:
+            cat_col = categorical_cols[0]
+            all_values = df[cat_col].dropna().unique().tolist()
+            selected_values = st.sidebar.multiselect(
+                f"Filter by {cat_col}",
+                options=all_values,
+                default=all_values,
+                key="segment_filter",
+            )
+            filter_keys.append("segment_filter")
+
+        val_range = None
+        if slider_col is not None:
+            col_min = df[slider_col].min()
+            col_max = df[slider_col].max()
+            val_range = st.sidebar.slider(
+                f"{slider_col} Range",
+                min_value=col_min,
+                max_value=col_max,
+                value=(col_min, col_max),
+                key="slider_filter",
+            )
+            filter_keys.append("slider_filter")
+
+        chart_type = st.sidebar.radio(
+            "Chart type", ["Bar", "Line"], key="chart_type_filter"
+        )
+        filter_keys.append("chart_type_filter")
+
+        if st.sidebar.button("Reset Filters"):
+            for key in filter_keys:
+                if key in st.session_state:
+                    del st.session_state[key]
+            st.rerun()
+
+        # --- Apply all filters to create filtered DataFrame -------------
+        mask = pd.Series([True] * len(df), index=df.index)
+        if date_range is not None:
+            if isinstance(date_range, tuple):
+                start_date, end_date = date_range
+            else:
+                start_date = end_date = date_range
+            mask &= (df[date_col] >= pd.Timestamp(start_date)) & (
+                df[date_col] <= pd.Timestamp(end_date)
+            )
+        if selected_values is not None:
+            mask &= df[cat_col].isin(selected_values)
+        if val_range is not None:
+            mask &= (df[slider_col] >= val_range[0]) & (
+                df[slider_col] <= val_range[1]
+            )
+        filtered_df = df[mask]
+
+        # --- Handle empty filter results --------------------------------
+        if len(filtered_df) == 0:
+            st.warning(
+                "No data matches the current filters. Try broadening your selection."
+            )
+            st.stop()
+
+        st.write(f"Showing {len(filtered_df):,} of {len(df):,} records")
+
+        # --- Automatic preview (uses filtered data) --------------------
         st.header("Dataset Preview")
         col1, col2, col3 = st.columns(3)
         with col1:
-            st.metric("Rows", f"{len(df):,}")
+            st.metric("Rows", f"{len(filtered_df):,}")
         with col2:
-            st.metric("Columns", str(len(df.columns)))
+            st.metric("Columns", str(len(filtered_df.columns)))
         with col3:
-            total_nulls = df.isnull().sum().sum()
-            total_cells = df.shape[0] * df.shape[1]
-            null_pct = (total_nulls / total_cells) * 100
+            total_nulls = filtered_df.isnull().sum().sum()
+            total_cells = filtered_df.shape[0] * filtered_df.shape[1]
+            null_pct = (total_nulls / total_cells) * 100 if total_cells else 0
             st.metric("Null %", f"{null_pct:.1f}%")
         st.divider()
 
         st.subheader("First 10 Rows")
-        st.dataframe(df.head(10), use_container_width=True)
+        st.dataframe(filtered_df.head(10), use_container_width=True)
 
         st.subheader("Column Summary")
+        f_len = len(filtered_df)
         summary = pd.DataFrame(
             {
-                "Column": df.columns,
-                "Type": df.dtypes.astype(str).values,
-                "Non-Null": df.notnull().sum().values,
-                "Null Count": df.isnull().sum().values,
-                "Null %": (df.isnull().sum() / len(df) * 100).round(1).values,
+                "Column": filtered_df.columns,
+                "Type": filtered_df.dtypes.astype(str).values,
+                "Non-Null": filtered_df.notnull().sum().values,
+                "Null Count": filtered_df.isnull().sum().values,
+                "Null %": (
+                    filtered_df.isnull().sum() / f_len * 100
+                    if f_len > 0
+                    else 0
+                ).round(1).values,
             }
         )
         st.dataframe(summary, use_container_width=True)
 
-        # --- Task 3: descriptive statistics ----------------------------
+        # --- Descriptive statistics ------------------------------------
         st.subheader("Descriptive Statistics")
-        st.dataframe(df.describe(), use_container_width=True)
+        st.dataframe(filtered_df.describe(), use_container_width=True)
 
-        # --- Task 5: downstream exploration ----------------------------
+        # --- Quick exploration -----------------------------------------
         st.subheader("Quick Exploration")
-        numeric_cols = df.select_dtypes(include="number").columns.tolist()
-        if numeric_cols:
-            selected_col = st.selectbox("Select a column to visualise", numeric_cols)
-            st.bar_chart(df[selected_col].value_counts().head(20))
+        expl_numeric_cols = filtered_df.select_dtypes(
+            include="number"
+        ).columns.tolist()
+        if expl_numeric_cols:
+            selected_col = st.selectbox(
+                "Select a column to visualise",
+                expl_numeric_cols,
+                key="explore_column",
+            )
+            series = filtered_df[selected_col].value_counts().head(20)
+            if chart_type == "Bar":
+                st.bar_chart(series)
+            else:
+                st.line_chart(series)
         else:
             st.info("No numeric columns to chart.")
 
         # Progressive disclosure - raw data behind an expander
         with st.expander("Raw data"):
-            st.dataframe(df, use_container_width=True)
+            st.dataframe(filtered_df, use_container_width=True)
             st.download_button(
                 "Download CSV",
-                data=df.to_csv(index=False).encode("utf-8"),
+                data=filtered_df.to_csv(index=False).encode("utf-8"),
                 file_name="data.csv",
                 mime="text/csv",
             )
