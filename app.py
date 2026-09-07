@@ -98,21 +98,86 @@ elif page == "Trends":
 elif page == "Data Explorer":
     st.title("Data Explorer")
 
-    st.header("Filters")
-    st.subheader("Narrow the data below")
-    c1, c2 = st.columns(2)
-    with c1:
-        st.write("Segment selector placeholder")
-    with c2:
-        st.write("Date range picker placeholder")
-    st.divider()
+    uploaded_file = st.file_uploader("Upload your dataset", type=["csv", "json"])
 
-    st.header("Data Tables")
-    st.subheader("Filtered results")
-    st.write("Data table placeholder")
-    st.divider()
+    if uploaded_file is not None:
+        try:
+            if uploaded_file.name.endswith(".csv"):
+                df = pd.read_csv(uploaded_file)
+            elif uploaded_file.name.endswith(".json"):
+                df = pd.read_json(uploaded_file)
+            else:
+                st.error("Unsupported file type.")
+                st.stop()
 
-    # Progressive disclosure - raw data lives behind an expander
-    with st.expander("Raw data"):
-        st.dataframe(pd.DataFrame({"col": []}), width="stretch")
-        st.download_button("Download CSV", data="", file_name="data.csv")
+            if len(df) == 0:
+                st.warning("Uploaded file is empty.")
+                st.stop()
+        except Exception:
+            st.error("Could not read this file. Check the format and try again.")
+            st.stop()
+
+        st.success(
+            "Loaded: "
+            + uploaded_file.name
+            + " ("
+            + str(len(df))
+            + " rows, "
+            + str(len(df.columns))
+            + " columns)"
+        )
+
+        # --- Task 2: automatic preview ---------------------------------
+        st.header("Dataset Preview")
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.metric("Rows", f"{len(df):,}")
+        with col2:
+            st.metric("Columns", str(len(df.columns)))
+        with col3:
+            total_nulls = df.isnull().sum().sum()
+            total_cells = df.shape[0] * df.shape[1]
+            null_pct = (total_nulls / total_cells) * 100
+            st.metric("Null %", f"{null_pct:.1f}%")
+        st.divider()
+
+        st.subheader("First 10 Rows")
+        st.dataframe(df.head(10), use_container_width=True)
+
+        st.subheader("Column Summary")
+        summary = pd.DataFrame(
+            {
+                "Column": df.columns,
+                "Type": df.dtypes.astype(str).values,
+                "Non-Null": df.notnull().sum().values,
+                "Null Count": df.isnull().sum().values,
+                "Null %": (df.isnull().sum() / len(df) * 100).round(1).values,
+            }
+        )
+        st.dataframe(summary, use_container_width=True)
+
+        # --- Task 3: descriptive statistics ----------------------------
+        st.subheader("Descriptive Statistics")
+        st.dataframe(df.describe(), use_container_width=True)
+
+        # --- Task 5: downstream exploration ----------------------------
+        st.subheader("Quick Exploration")
+        numeric_cols = df.select_dtypes(include="number").columns.tolist()
+        if numeric_cols:
+            selected_col = st.selectbox("Select a column to visualise", numeric_cols)
+            st.bar_chart(df[selected_col].value_counts().head(20))
+        else:
+            st.info("No numeric columns to chart.")
+
+        # Progressive disclosure - raw data behind an expander
+        with st.expander("Raw data"):
+            st.dataframe(df, use_container_width=True)
+            st.download_button(
+                "Download CSV",
+                data=df.to_csv(index=False).encode("utf-8"),
+                file_name="data.csv",
+                mime="text/csv",
+            )
+
+    else:
+        st.info("Upload a CSV or JSON file to begin.")
