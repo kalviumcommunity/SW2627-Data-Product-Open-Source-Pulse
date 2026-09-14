@@ -1,0 +1,29 @@
+name: Weekly Data Pipeline
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  run-pipeline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Run pipeline
+        run: python pipeline.py --input data/raw/segment_data.csv --output output
+      - name: Commit output
+        run: |
+          git config user.name "Pipeline Bot"
+          git config user.email "bot@example.com"
+          git add output/cleaned.csv output/aggregated.csv
+          git diff --cached --quiet || git commit -m "pipeline: automated refresh"
+          git push
