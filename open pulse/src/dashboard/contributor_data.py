@@ -1,8 +1,10 @@
 """Data access and derived views for contributor-retention screens."""
 
+from io import BytesIO
 from pathlib import Path
 
 import pandas as pd
+import streamlit as st
 
 from src.analytics.demo_data import build_demo_data
 from src.analytics.first_time_contributors import return_rate_by_factor
@@ -12,13 +14,51 @@ from src.analytics.retention import churn_risk_flags
 OUTPUT_DIR = Path(__file__).resolve().parents[2] / "output"
 
 
+def _ensure_wait_bucket(journey):
+    if "wait_bucket" in journey.columns:
+        return journey
+    if "first_review_wait_days" not in journey.columns:
+        return journey
+    wait = pd.to_numeric(journey["first_review_wait_days"], errors="coerce")
+    result = journey.copy()
+    result["wait_bucket"] = pd.cut(
+        wait,
+        bins=[-float("inf"), 2, 10, float("inf")],
+        labels=["fast_le_2d", "medium_2_10d", "slow_gt_10d"],
+        include_lowest=True,
+    ).astype("object")
+    result.loc[wait.isna(), "wait_bucket"] = "no_review"
+    return result
+
+
+def _ensure_first_pr_merged(journey):
+    if "first_pr_merged" in journey.columns:
+        return journey
+    result = journey.copy()
+    if "first_pr_state" in result.columns:
+        states = result["first_pr_state"].astype(str).str.lower()
+        result["first_pr_merged"] = states.eq("merged").astype(int)
+    else:
+        result["first_pr_merged"] = 0
+    return result
+
+
 def load_contributor_data(uploaded_file=None):
+    persisted_key = "persisted_contributor_csv"
+    if uploaded_file is None:
+        uploaded_file = st.session_state.get(persisted_key)
     if uploaded_file is not None:
+        if isinstance(uploaded_file, dict) and "bytes" in uploaded_file:
+            uploaded_file = BytesIO(uploaded_file["bytes"])
+        if hasattr(uploaded_file, "seek"):
+            uploaded_file.seek(0)
         journey = pd.read_csv(uploaded_file)
         required = {"contributor_id", "first_review_wait_days", "review_iterations", "returned"}
         missing = required.difference(journey.columns)
         if missing:
             raise ValueError(f"Uploaded journey CSV is missing columns: {sorted(missing)}")
+        journey = _ensure_wait_bucket(journey)
+        journey = _ensure_first_pr_merged(journey)
         if "risk_level" not in journey:
             journey = churn_risk_flags(journey)
         return {"journey": journey, "pull_requests": journey, "issues": pd.DataFrame(), "demo": False}
