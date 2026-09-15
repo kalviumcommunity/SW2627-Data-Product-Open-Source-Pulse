@@ -1,9 +1,11 @@
+import pandas as pd
 import streamlit as st
 
-from src.dashboard.contributor_data import factor_breakdown, journey_with_risk
+from src.dashboard.contributor_data import _ensure_wait_bucket, factor_breakdown, journey_with_risk
 
 
 data, journey = journey_with_risk()
+journey = _ensure_wait_bucket(journey)
 st.title("Onboarding Insights")
 st.caption("Compare onboarding experiences by affected contributors and return rate.")
 
@@ -15,9 +17,9 @@ else:
 
 st.subheader("What to investigate")
 cards = [
-    ("Long first review time", journey["wait_bucket"].eq("slow_gt_10d")),
-    ("No maintainer response", journey["unanswered_issue"].eq(1)),
-    ("High review iterations", journey["review_iterations"].ge(3)),
+    ("Long first review time", journey.get("wait_bucket", pd.Series(False, index=journey.index)).eq("slow_gt_10d")),
+    ("No maintainer response", journey.get("unanswered_issue", pd.Series(0, index=journey.index)).eq(1)),
+    ("High review iterations", journey.get("review_iterations", pd.Series(0, index=journey.index)).ge(3)),
 ]
 for label, mask in cards:
     affected = journey[mask]
