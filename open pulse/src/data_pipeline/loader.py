@@ -1,21 +1,37 @@
 """Load raw GitHub export files (CSV/JSON) into DataFrames."""
 
+from pathlib import Path
+
+import pandas as pd
+
+
+DEFAULT_RAW_DIR = Path(__file__).resolve().parents[2] / "data" / "raw"
+
+
+def _load(name, path=None):
+    source = Path(path) if path else DEFAULT_RAW_DIR / name
+    if not source.exists():
+        return pd.DataFrame()
+    if source.suffix.lower() == ".json":
+        return pd.read_json(source)
+    return pd.read_csv(source)
+
+
 def load_contributors(path=None):
-    """Return contributors DataFrame."""
-    ...
+    return _load("contributors.csv", path)
+
 
 def load_pull_requests(path=None):
-    """Return pull_requests DataFrame."""
-    ...
+    return _load("pull_requests.csv", path)
+
 
 def load_issues(path=None):
-    """Return issues DataFrame."""
-    ...
+    return _load("issues.csv", path)
+
 
 def load_reviews(path=None):
-    """Return reviews DataFrame."""
-    ...
+    return _load("reviews.csv", path)
+
 
 def load_commits(path=None):
-    """Return commits DataFrame."""
-    ...
+    return _load("commits.csv", path)

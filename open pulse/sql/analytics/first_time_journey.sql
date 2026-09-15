@@ -4,13 +4,15 @@
 WITH first_pr AS (
     SELECT
         contributor_id,
+        id,
         number,
         created_at,
         merged_at,
         closed_at,
         state,
         additions,
-        deleted_files
+        deletions,
+        is_merged
     FROM pull_requests
     WHERE is_first_pr = 1
 ),
