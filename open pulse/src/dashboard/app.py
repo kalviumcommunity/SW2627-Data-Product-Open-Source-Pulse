@@ -28,12 +28,19 @@ st.set_page_config(
 )
 
 PAGES = {
+    "Contributor Retention": [
+        st.Page("pages/0_Contributor_Dashboard.py", title="Contributor Dashboard", icon=":material/monitoring:", default=True),
+        st.Page("pages/1_Contributor_Insights.py", title="Onboarding Insights", icon=":material/lightbulb:"),
+        st.Page("pages/2_Contributors.py", title="Contributors", icon=":material/group:"),
+        st.Page("pages/3_PR_Analysis.py", title="PR Analysis", icon=":material/rate_review:"),
+        st.Page("pages/4_Issue_Analysis.py", title="Issue Analysis", icon=":material/bug_report:"),
+        st.Page("pages/5_Recommendations.py", title="Recommendations", icon=":material/task_alt:"),
+    ],
     "Business Analytics": [
         st.Page(
             "pages/3_Executive_Summary.py",
             title="Executive Summary",
             icon=":material/speed:",
-            default=True,
         ),
         st.Page(
             "pages/1_Business_Overview.py",
