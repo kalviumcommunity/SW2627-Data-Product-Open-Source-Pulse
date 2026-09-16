@@ -54,9 +54,11 @@ KPI_CARD_CSS = """
 .kpi-row { display:flex; gap:.75rem; flex-wrap:wrap; margin:.25rem 0 .5rem; }
 .kpi-card {
   flex:1 1 0; min-width:9.5rem; padding:.85rem 1rem;
-  border:1px solid rgba(128,128,128,.28); border-radius:.55rem;
+    border:1px solid var(--pulse-border); border-radius:.55rem;
   border-left:5px solid var(--kpi-accent);
-  background:rgba(128,128,128,.05);
+    background:var(--pulse-surface); box-shadow:0 1px 2px var(--pulse-shadow);
+    transition:background-color 220ms ease, color 220ms ease,
+        border-color 220ms ease, box-shadow 220ms ease;
 }
 .kpi-label {
   font-size:.72rem; letter-spacing:.05em; text-transform:uppercase;
@@ -182,7 +184,7 @@ def palette_swatches():
             f'<div style="display:flex;align-items:center;gap:.6rem;'
             f'margin:.25rem 0;font-size:.9rem;">'
             f'<span style="width:2.4rem;height:1.1rem;border-radius:3px;'
-            f'background:{value};border:1px solid rgba(128,128,128,.45);"></span>'
+            f'background:{value};border:1px solid var(--pulse-border);"></span>'
             f"<code>{value}</code><span>{label}</span></div>"
         )
 

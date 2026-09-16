@@ -52,3 +52,15 @@ def test_load_contributor_data_reads_persisted_csv_bytes():
 
     assert data["journey"].loc[0, "contributor_id"] == 1
     assert data["journey"].loc[0, "wait_bucket"] == "medium_2_10d"
+
+
+def test_load_contributor_data_defaults_optional_first_pr_details():
+    csv = StringIO(
+        "contributor_id,first_review_wait_days,review_iterations,returned\n"
+        "1,3,2,1\n"
+    )
+
+    journey = load_contributor_data(csv)["journey"]
+
+    assert journey.loc[0, "first_pr_state"] == "unknown"
+    assert pd.isna(journey.loc[0, "first_pr_created_at"])

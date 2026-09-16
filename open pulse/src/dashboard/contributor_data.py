@@ -43,6 +43,16 @@ def _ensure_first_pr_merged(journey):
     return result
 
 
+def _ensure_first_pr_details(journey):
+    """Provide safe defaults for optional first-PR fields used by pages."""
+    result = journey.copy()
+    if "first_pr_created_at" not in result.columns:
+        result["first_pr_created_at"] = pd.NaT
+    if "first_pr_state" not in result.columns:
+        result["first_pr_state"] = "unknown"
+    return result
+
+
 def load_contributor_data(uploaded_file=None):
     persisted_key = "persisted_contributor_csv"
     if uploaded_file is None:
@@ -59,6 +69,7 @@ def load_contributor_data(uploaded_file=None):
             raise ValueError(f"Uploaded journey CSV is missing columns: {sorted(missing)}")
         journey = _ensure_wait_bucket(journey)
         journey = _ensure_first_pr_merged(journey)
+        journey = _ensure_first_pr_details(journey)
         if "risk_level" not in journey:
             journey = churn_risk_flags(journey)
         return {"journey": journey, "pull_requests": journey, "issues": pd.DataFrame(), "demo": False}
