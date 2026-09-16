@@ -73,7 +73,7 @@ def build_revenue_trend(daily, currency=True):
         arrowcolor=PALETTE["danger"],
         ax=-55,
         ay=-35,
-        bgcolor="#fff8dc",
+        bgcolor=theme.active_tokens()["callout"],
         bordercolor=PALETTE["neutral"],
         borderwidth=1,
     )
@@ -111,7 +111,7 @@ def build_transactions_trend(daily):
             x=frame["date"],
             y=frame["transaction_count"],
             name="Daily transactions",
-            marker={"color": "#b8cfe0", "line": {"width": 0}},
+            marker={"color": theme.CHART_COLORS[4], "line": {"width": 0}},
             hovertemplate=(
                 "<b>%{x|%a %d %b %Y}</b><br>"
                 "Transactions: <b>%{y:,.0f}</b><extra></extra>"

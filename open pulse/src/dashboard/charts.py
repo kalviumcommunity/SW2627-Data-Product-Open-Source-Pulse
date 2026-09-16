@@ -216,7 +216,7 @@ def build_value_distribution(customers, statistics):
         arrowprops={"arrowstyle": "->", "color": PALETTE["neutral"], "lw": 1.6},
         fontsize=9,
         ha="center",
-        bbox=theme.annotation_box("#f0f0f0"),
+        bbox=theme.annotation_box(),
     )
 
     ax.set_title(f"Customer Value Is Heavily Right-Skewed (n = {statistics['count']:,})")
@@ -390,7 +390,7 @@ def build_tickets_vs_value(customers):
         fontsize=11,
         va="top",
         ha="left",
-        bbox=theme.annotation_box("#eef4fa"),
+        bbox=theme.annotation_box(),
     )
 
     ax.set_title("Higher-Value Customers Open More Support Tickets")
@@ -513,7 +513,7 @@ def build_ticket_paradox(pooled_r, within_segment_r, small_sample_r, small_n):
     bars = ax.bar(labels, values, color=colors, edgecolor="white")
     ax.bar_label(bars, labels=[f"{value:+.2f}" for value in values],
                  padding=4, fontweight="bold")
-    ax.axhline(0, color="#444444", linewidth=1.2)
+    ax.axhline(0, color=theme.active_tokens()["text_secondary"], linewidth=1.2)
     ax.axhspan(-0.1, 0.1, color=PALETTE["neutral"], alpha=0.13,
                label="No meaningful relationship")
 
